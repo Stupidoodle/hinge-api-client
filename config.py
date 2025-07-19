@@ -1,5 +1,6 @@
 """Settings for the application."""
 
+from functools import lru_cache
 from pydantic_settings import BaseSettings
 
 
@@ -15,4 +16,14 @@ class Settings(BaseSettings):
     HINGE_APP_VERSION: str = "9.82.0"
     HINGE_BUILD_NUMBER: str = "11616"
     OS_VERSION: str = "26.0"
-    
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Get app settings.
+
+    Returns:
+        Settings: (Settings) App settings
+
+    """
+    return Settings()
