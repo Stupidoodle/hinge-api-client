@@ -217,3 +217,4 @@ training_data*
 temp_images
 /asian_detector_optimized_metadata.json
 /asian_detector_optimized_evaluation.json
+/session.json
