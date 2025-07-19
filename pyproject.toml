@@ -1,0 +1,66 @@
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    ".mypy_cache",
+    ".pytest_cache",
+    "node_modules",
+    "alembic_app",
+    "alembic_auth",
+    ".ruff_cache"
+]
+
+line-length = 88
+
+target-version = "py312"
+
+lint.select = [
+    "E",
+    "F",
+    "C",
+    "D",
+    "B",
+    "I",
+    "Q"
+]
+
+# Ignore specific rules
+lint.ignore = [
+    "E203",  # Whitespace before ':'
+    "D203",
+    "D213",
+    "I001"
+]
+
+# Fixable rules
+lint.fixable = [
+    "E",
+    "I",
+]
+
+[tool.black]
+line-length = 87
+
+target-version = ["py312"]
+
+skip-string-normalization = false
+
+skip-magic-trailing-comma = false
+
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.ruff_cache
+  | \.pytest_cache
+  | __pycache__
+  | build
+  | dist
+  | venv
+  | node_modules
+)/
+'''
