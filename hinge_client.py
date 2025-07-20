@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import Any
+import asyncio
 import httpx
 import json
 import os
@@ -49,11 +50,13 @@ class HingeClient:
     device_id: str
     hinge_token: str
     identity_id: str
+    installed: bool
     install_id: str
     phone_number: str
     sendbird_jwt: str
-    sendbird_session_key: str
+    session_file: str
     session_id: str
+    sendbird_session_key: str
     settings: Settings
 
     def __init__(
@@ -72,19 +75,22 @@ class HingeClient:
             session_file (str): Name of the file to store session data.
 
         """
+        self.phone_number = phone_number
+        self.session_file = session_file
+
         if os.path.exists(session_file):
             with open(session_file, "r") as f:
                 session_data = json.load(f)
 
-            if phone_number == session_data.get("phone_number"):
+            if self.phone_number == session_data.get("phone_number"):
                 log.info(
                     "Using existing session data",
                     phone_number=session_data.get("phone_number"),
                 )
-                self.phone_number = session_data.get("phone_number", phone_number)
                 self.device_id = session_data.get(
                     "device_id", str(uuid.uuid4()).upper()
                 )
+                self.installed = session_data.get("installed", False)
                 self.install_id = session_data.get(
                     "install_id", str(uuid.uuid4()).upper()
                 )
@@ -121,8 +127,10 @@ class HingeClient:
             "Accept-Language": "en-GB",
             "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/json",
+            "X-Device-Model-Code": "iPhone16,1",
+            "X-Device-Model": "unknown",
+            "X-Device-Region": "FR",
         }
-        self.session_file = session_file
 
     def _get_default_headers(self) -> dict[str, str]:
         """Construct the default headers requires for most Hinge API requests.
@@ -167,11 +175,17 @@ class HingeClient:
         install_payload = {"installId": self.install_id}
 
         try:
-            await self.client.post(
-                "/identity/install",
-                json=install_payload,
-                headers=headers,
-            )
+            if not self.installed:
+                await self.client.post(
+                    "/identity/install",
+                    json=install_payload,
+                    headers=headers,
+                )
+                self.installed = True
+                log.info("Device registered successfully", install_id=self.install_id)
+                self._save_session()
+            else:
+                log.info("Device already registered", install_id=self.install_id)
         except Exception as e:
             log.error("Failed to register device", exc_info=e)
             raise HingeAuthError("Failed to register device") from e
@@ -226,6 +240,8 @@ class HingeClient:
             response = await self.client.post(
                 "/auth/sms/v2", json=payload, headers=headers
             )
+            log.info(response.text)
+            log.info(str(response))
             response.raise_for_status()
             auth_data = HingeAuthToken.model_validate(response.json())
             self.hinge_token = auth_data.token
@@ -458,6 +474,7 @@ class HingeClient:
         session_data = {
             "phone_number": self.phone_number,
             "device_id": self.device_id,
+            "installed": self.installed,
             "install_id": self.install_id,
             "session_id": self.session_id,
             "hinge_token": self.hinge_token,
@@ -534,3 +551,7 @@ async def main() -> None:
         print(f"\nAn unexpected error occurred: {e}")
     finally:
         await client.client.aclose()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
