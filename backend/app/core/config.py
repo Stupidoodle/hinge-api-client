@@ -2,6 +2,10 @@
 
 from functools import lru_cache
 from pydantic_settings import BaseSettings
+from pydantic_extra_types.phone_numbers import PhoneNumber
+
+
+PhoneNumber.phone_format = "E164"
 
 
 class Settings(BaseSettings):
@@ -16,7 +20,7 @@ class Settings(BaseSettings):
     HINGE_APP_VERSION: str = "9.82.0"
     HINGE_BUILD_NUMBER: str = "11616"
     OS_VERSION: str = "26.0"
-    
+
     # Debug configuration
     DEBUG: bool = True
 

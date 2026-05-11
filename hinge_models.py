@@ -34,7 +34,7 @@ from hinge_enums import (
     ReligionEnum,
     SmokingStatusEnum,
 )
-from logging_config import logger as log
+from backend.app.core.logging_config import logger as log
 
 if TYPE_CHECKING:
     from hinge_client import HingeClient  # noqa: F401

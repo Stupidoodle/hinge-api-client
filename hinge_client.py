@@ -23,7 +23,7 @@ import os
 import uuid
 import websockets
 
-from config import Settings, get_settings
+from backend.app.core.config import Settings, get_settings
 from hinge_error import HingeAuthError, HingeEmail2FAError
 from hinge_models import (
     AnswerContent,
@@ -46,7 +46,7 @@ from hinge_models import (
     UserProfile,
 )
 from hinge_prompts_manager import HingePromptsManager
-from logging_config import logger as log
+from backend.app.core.logging_config import logger as log
 
 
 class HingeClient:
